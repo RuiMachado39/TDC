@@ -74,11 +74,12 @@ begin
     else if(rREADYOUTSTORED & !iHIT)
     begin
         rREADY <= 1'b1;
-        rREADYOUTSTORED <= 1'b0;
+        //rREADYOUTSTORED <= 1'b0;
     end
-    else if(!iHIT)
+    else if(iHIT)
     begin
         rREADY <= 1'b0;
+		rREADYOUTSTORED <= 1'b0; //alterado a 22-05-2018 RMAC
     end
 end 
 //wire wREADY;

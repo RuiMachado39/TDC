@@ -24,13 +24,16 @@
     input iCLK,
     input iRST,
     input iHIT,
-    input iSTORE,
-    output [`NUM_STAGES-1:0] oTHERMOMETERVALUE
+    input iSTORESTART,
+    input iSTORESTOP,
+    output [`NUM_STAGES-1:0] oTHERMOMETERSTARTVALUE,
+    output [`NUM_STAGES-1:0] oTHERMOMETERSTOPVALUE
 );
 
 wire [`NUM_STAGES-1:0] wFINEVALUE;
 wire [`NUM_STAGES-1:0] wTDCVALUE; 
-wire [`NUM_STAGES-1:0] wTHERMOMETERVALUE; 
+wire [`NUM_STAGES-1:0] wTHERMOMETERSTARTVALUE;
+wire [`NUM_STAGES-1:0] wTHERMOMETERSTOPVALUE; 
 
 //FINE TDC DELAY CHAIN
 genvar i;
@@ -71,7 +74,7 @@ generate
         .Q(wTDCVALUE[j]),
         .C(iCLK),
         .CE(1'b1),
-        .CLR(iRST),
+        .CLR(1'b0),
         .D(wFINEVALUE[j])
        );
     end
@@ -82,16 +85,31 @@ genvar k;
 generate
     for(k=0;k<=`NUM_STAGES-1;k=k+1)
     begin
-       (* dont_touch = "TRUE" *) FDCE #(.INIT(1'b0)) rTHERMOMETERVALUE(
-        .Q(wTHERMOMETERVALUE[k]),
+       (* dont_touch = "TRUE" *) FDCE #(.INIT(1'b0)) rTHERMOMETERSTARTVALUE(
+        .Q(wTHERMOMETERSTARTVALUE[k]),
         .C(iCLK),
-        .CE(iSTORE),
+        .CE(iSTORESTART),
         .CLR(iRST),
         .D(wTDCVALUE[k])
        );
     end
 endgenerate
 
-assign oTHERMOMETERVALUE = wTHERMOMETERVALUE;
+genvar l;
+generate
+    for(l=0;l<=`NUM_STAGES-1;l=l+1)
+    begin
+       (* dont_touch = "TRUE" *) FDCE #(.INIT(1'b0)) rTHERMOMETERSTOPVALUE(
+        .Q(wTHERMOMETERSTOPVALUE[l]),
+        .C(iCLK),
+        .CE(iSTORESTOP),
+        .CLR(iRST),
+        .D(wTDCVALUE[l])
+       );
+    end
+endgenerate
+
+assign oTHERMOMETERSTARTVALUE = wTHERMOMETERSTARTVALUE;
+assign oTHERMOMETERSTOPVALUE = wTHERMOMETERSTOPVALUE;
 
 endmodule
